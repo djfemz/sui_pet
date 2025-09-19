@@ -7,12 +7,12 @@ module sui_pet::dto{
         name:String,
     }
 
-    public fun create_pet_request( name:String, ctx: &mut TxContext) : CreatePetRequest{
+    public fun create_pet_request( name:String, ctx: &mut TxContext){
         let req = CreatePetRequest{
             id:object::new(ctx),
             name:name
         };
-        req
+        transfer::public_transfer(req, ctx.sender());
     }
 
     public fun get_name(req:&CreatePetRequest) : String{
