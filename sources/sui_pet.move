@@ -24,15 +24,18 @@ module sui_pet::sui_pet{
     }
 
     public fun new_species(species:String) : Species{
-        let sp = string::into_bytes(species);
-        let mammal = string::into_bytes(string::utf8(b"MAMMAL"));
-
-        if(sp==mammal){
-             Species::String(species)
-        }else{
-            abort 1
-        }
-        
+        let allowed_species = vector<String>[
+            string::utf8(b"MAMMAL"), string::utf8(b"AVES"),
+            string::utf8(b"PISCES")
+            ];
+        let mut index = 0;
+        while(index < allowed_species.length()){
+            if(allowed_species[index] == species){
+               return Species::String(species);
+            };
+            index = index + 1;
+        };
+        Species::Empty
     }
 
      public fun new_level(level:String) : Level{
@@ -60,21 +63,26 @@ module sui_pet::sui_pet{
 
     #[test]
     public fun test_create_new_species(){
-        let sp = string::utf8(b"MAMMAL");
+        let sp = string::utf8(b"AVES");
         let species = new_species(sp);
         debug::print(&species);
     }
    
 
-    // #[test]
-    // public fun test_mint_pet(){
-    //     let sender_address = @0x3;
-    //     let mut scenario = test_scenario::begin(sender_address);
-    //     let ctx = scenario.ctx();
-    //     let create_pet_req = dto::create_pet_request(ctx, string::utf8(b"Tommy"));
-    //     new_pet(ctx, create_pet_req);
-    //     test_scenario::end(scenario);
-    // }
+    #[test]
+    public fun test_mint_pet(){
+        let sender_address = @0x3;
+        let mut scenario = test_scenario::begin(sender_address);
+        let ctx = scenario.ctx();
+        let req = dto::create_pet_request(string::utf8(b"Tommy"), ctx);
+        new_pet(req, ctx);
+        test_scenario::end(scenario);
+    }
+
+    #[test]
+    public fun test_feed_pet(){
+        
+    }
 }
 
 
