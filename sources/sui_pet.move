@@ -70,7 +70,7 @@ module sui_pet::sui_pet{
     }
 
     #[allow(lint(self_transfer))]
-    public fun new_pet(create_pet_req:dto::CreatePetRequest, ctx:&mut TxContext) {
+    public fun new_pet(create_pet_req:dto::CreatePetRequest, ctx:&mut TxContext):Pet {
         let id = object::new(ctx);
         let species = new_species(string::utf8(b"MAMMAL"));
         let level = new_level(string::utf8(b"LEVEL_1"));
@@ -83,6 +83,11 @@ module sui_pet::sui_pet{
         };
         debug::print(&pet);
         transfer::public_transfer(create_pet_req,  ctx.sender());
+        pet
+    }
+
+    public fun create_pet(create_pet_req:dto::CreatePetRequest, ctx:&mut TxContext){
+        let pet = new_pet(create_pet_req, ctx);
         transfer::public_transfer(pet, ctx.sender());
     }
     
@@ -95,15 +100,16 @@ module sui_pet::sui_pet{
     }
    
 
-    // #[test]
-    // public fun test_mint_pet(){
-    //     let sender_address = @0x3;
-    //     let mut scenario = test_scenario::begin(sender_address);
-    //     let ctx = scenario.ctx();
-    //     let req = dto::create_pet_request(string::utf8(b"Tommy"), ctx);
-    //     new_pet(req, ctx);
-    //     test_scenario::end(scenario);
-    // }
+    #[test]
+    public fun test_mint_pet(){
+        let sender_address = @0x3;
+        let mut scenario = test_scenario::begin(sender_address);
+        let ctx = scenario.ctx();
+        let req = dto::new_pet_request(string::utf8(b"Tommy"), ctx);
+        let pet = new_pet(req, ctx);
+        transfer::public_transfer(pet, sender_address);
+        test_scenario::end(scenario);
+    }
 
     #[test]
     public fun test_feed_pet(){
@@ -123,7 +129,7 @@ module sui_pet::sui_pet{
             nutrition:10
         };
         pet.feed(food, ctx);
-        assert!(pet.is_hungry == false, 0);
+        assert!(!pet.is_hungry, 0);
         transfer::public_transfer(pet, ctx.sender());
         test_scenario::end(scenario);
     }
